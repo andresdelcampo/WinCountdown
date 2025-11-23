@@ -12,6 +12,8 @@ namespace WinCountdown
         private bool isPaused = false;
         private bool isRunning = false;
         private TimeSpan? lastShortcutTime = null;
+        private bool isNegativeTime = false;
+        private Color originalColor = Color.White;
 
         // For dragging the window
         private bool isDragging = false;
@@ -54,6 +56,7 @@ namespace WinCountdown
         {
             SetInBottomRightCorner();
             SetInitialTime();
+            originalColor = labelCountdown.ForeColor;
             UpdateCountdownLabel();
             RegisterHotkeys();
             InitializeTrayIcon();
@@ -196,6 +199,8 @@ namespace WinCountdown
             timer.Start();
             isRunning = true;
             isPaused = false;
+            isNegativeTime = false;
+            labelCountdown.ForeColor = originalColor;
             UpdateCountdownLabel();
         }
 
@@ -340,11 +345,27 @@ namespace WinCountdown
             UpdateCountdownLabel();
             UpdateTrayTooltip();
 
-            if (labelCountdown.Text == "00:00:00" || labelCountdown.Text == "00:00")
+            var appSettings = ConfigurationManager.AppSettings;
+            bool countNegative = bool.Parse(appSettings["CountNegative"] ?? "false");
+
+            TimeSpan remaining = initialTime - stopWatch.Elapsed;
+
+            if (remaining <= TimeSpan.Zero && !isNegativeTime)
             {
-                stopWatch.Stop();
-                timer.Stop();
-                BlinkBeepAndExit();
+                if (countNegative)
+                {
+                    // Switch to negative counting - turn red
+                    isNegativeTime = true;
+                    labelCountdown.ForeColor = Color.Red;
+                    // Continue running
+                }
+                else
+                {
+                    // Stop and blink/beep as before
+                    stopWatch.Stop();
+                    timer.Stop();
+                    BlinkBeepAndExit();
+                }
             }
         }
 
@@ -461,12 +482,16 @@ namespace WinCountdown
                 timeToDisplay = initialTime - stopWatch.Elapsed;
             }
 
-            // Prevent negative display
+            // Handle negative time display
+            string prefix = "";
             if (timeToDisplay < TimeSpan.Zero)
-                timeToDisplay = TimeSpan.Zero;
+            {
+                prefix = "-";
+                timeToDisplay = timeToDisplay.Negate();
+            }
 
             string timeFormat = (timeToDisplay.Hours > 0) ? @"hh\:mm\:ss" : @"mm\:ss";
-            labelCountdown.Text = timeToDisplay.ToString(timeFormat);
+            labelCountdown.Text = prefix + timeToDisplay.ToString(timeFormat);
         }
 
         private void SetInBottomRightCorner()
