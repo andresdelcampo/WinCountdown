@@ -354,9 +354,6 @@ namespace WinCountdown
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            UpdateCountdownLabel();
-            UpdateTrayTooltip();
-
             var appSettings = ConfigurationManager.AppSettings;
             bool countNegative = bool.Parse(appSettings["CountNegative"] ?? "false");
 
@@ -376,9 +373,15 @@ namespace WinCountdown
                     // Stop and blink/beep as before
                     stopWatch.Stop();
                     timer.Stop();
+                    // Set to exactly zero before blinking
+                    labelCountdown.Text = (initialTime.Hours > 0) ? "00:00:00" : "00:00";
                     BlinkBeepAndExit();
+                    return; // Don't update the label again
                 }
             }
+
+            UpdateCountdownLabel();
+            UpdateTrayTooltip();
         }
 
         // Tray icon event handlers
