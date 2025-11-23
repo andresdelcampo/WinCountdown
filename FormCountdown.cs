@@ -13,6 +13,11 @@ namespace WinCountdown
         private bool isRunning = false;
         private TimeSpan? lastShortcutTime = null;
 
+        // For dragging the window
+        private bool isDragging = false;
+        private Point dragCursorPoint;
+        private Point dragFormPoint;
+
         // P/Invoke for RegisterHotKey
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -375,6 +380,62 @@ namespace WinCountdown
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        // Label context menu event handlers
+        private void add1MinToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddMinutes(1);
+        }
+
+        private void add5MinToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddMinutes(5);
+        }
+
+        private void subtract1MinToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SubtractMinutes(1);
+        }
+
+        private void pauseResumeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToggleStartPauseResume();
+        }
+
+        private void resetLabelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ResetTimer();
+        }
+
+        private void hideLabelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            HideWindow();
+        }
+
+        // Drag functionality
+        private void labelCountdown_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                isDragging = true;
+                dragCursorPoint = Cursor.Position;
+                dragFormPoint = this.Location;
+            }
+        }
+
+        private void labelCountdown_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDragging)
+            {
+                Point diff = Point.Subtract(Cursor.Position, new Size(dragCursorPoint));
+                this.Location = Point.Add(dragFormPoint, new Size(diff));
+            }
+        }
+
+        private void labelCountdown_MouseUp(object sender, MouseEventArgs e)
+        {
+            isDragging = false;
         }
 
         private void SetInitialTime()
