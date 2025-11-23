@@ -257,6 +257,12 @@ namespace WinCountdown
             if (isPaused)
             {
                 pausedTimeRemaining = pausedTimeRemaining.Add(TimeSpan.FromMinutes(minutes));
+                // If we're back above zero, restore original color
+                if (pausedTimeRemaining >= TimeSpan.Zero && isNegativeTime)
+                {
+                    isNegativeTime = false;
+                    labelCountdown.ForeColor = originalColor;
+                }
                 UpdateCountdownLabel();
             }
             else if (isRunning)
@@ -265,6 +271,12 @@ namespace WinCountdown
                 initialTime = currentRemaining.Add(TimeSpan.FromMinutes(minutes));
                 stopWatch.Reset();
                 stopWatch.Start();
+                // If we're back above zero, restore original color
+                if (initialTime - stopWatch.Elapsed >= TimeSpan.Zero && isNegativeTime)
+                {
+                    isNegativeTime = false;
+                    labelCountdown.ForeColor = originalColor;
+                }
                 UpdateCountdownLabel();
             }
             ShowWindow();
