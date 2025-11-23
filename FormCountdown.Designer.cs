@@ -52,7 +52,7 @@
             this.labelCountdown.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelCountdown.Name = "labelCountdown";
             this.labelCountdown.OutlineForeColor = System.Drawing.Color.Black;
-            this.labelCountdown.OutlineWidth = 2.5F;
+            this.labelCountdown.OutlineWidth = 1.5F;
             this.labelCountdown.Size = new System.Drawing.Size(542, 170);
             this.labelCountdown.TabIndex = 0;
             this.labelCountdown.Text = "00:05:00";
