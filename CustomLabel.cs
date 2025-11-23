@@ -1,7 +1,5 @@
-﻿using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;
 
-// Reference from StackOverflow by King King and Ryan Lundy
-// https://stackoverflow.com/questions/19842722/setting-a-font-with-outline-color-in-c-sharp
 public class CustomLabel : Label
 {
     public CustomLabel()
@@ -11,21 +9,37 @@ public class CustomLabel : Label
     }
     public Color OutlineForeColor { get; set; }
     public float OutlineWidth { get; set; }
+
     protected override void OnPaint(PaintEventArgs e)
     {
-        e.Graphics.FillRectangle(new SolidBrush(BackColor), ClientRectangle);
         using (GraphicsPath gp = new GraphicsPath())
-        using (Pen outline = new Pen(OutlineForeColor, OutlineWidth)
-        { LineJoin = LineJoin.Round })
         using (StringFormat sf = new StringFormat())
-        using (Brush foreBrush = new SolidBrush(ForeColor))
         {
             gp.AddString(Text, Font.FontFamily, (int)Font.Style,
                 Font.Size, ClientRectangle, sf);
+
             e.Graphics.ScaleTransform(1.3f, 1.35f);
-            e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
-            e.Graphics.DrawPath(outline, gp);
-            e.Graphics.FillPath(foreBrush, gp);
+            e.Graphics.SmoothingMode = SmoothingMode.None; // No anti-aliasing to avoid blending
+            e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            // Draw the black outline by widening the path
+            using (GraphicsPath outlinePath = (GraphicsPath)gp.Clone())
+            {
+                using (Pen outlinePen = new Pen(OutlineForeColor, OutlineWidth * 2))
+                {
+                    outlinePath.Widen(outlinePen);
+                }
+                using (SolidBrush outlineBrush = new SolidBrush(OutlineForeColor))
+                {
+                    e.Graphics.FillPath(outlineBrush, outlinePath);
+                }
+            }
+
+            // Fill the text in the foreground color
+            using (SolidBrush foreBrush = new SolidBrush(ForeColor))
+            {
+                e.Graphics.FillPath(foreBrush, gp);
+            }
         }
     }
 }
